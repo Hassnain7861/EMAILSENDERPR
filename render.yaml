@@ -1,0 +1,41 @@
+# Render Blueprint: deploy both services from one repo.
+# Dashboard: New → Blueprint → Connect repo → paste this file or select from repo.
+#
+# After first deploy:
+# 1) Copy the Flask service URL (e.g. https://curator-tracking.onrender.com)
+# 2) In the Node service → Environment → set TRACKING_API_URL to that URL (no trailing slash)
+# 3) In the campaign UI, set "Tracking API base URL" to the same URL (or rely on default if you bake it in)
+#
+# Flask picks PUBLIC_BASE_URL from RENDER_EXTERNAL_URL automatically on Render.
+#
+version: "1"
+services:
+  - type: web
+    name: curator-tracking
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements-render.txt
+    # PYTHONPATH=. ensures `flask_email_tracking` imports on Render’s Linux cwd
+    startCommand: PYTHONPATH=. gunicorn --workers 2 --timeout 120 --bind 0.0.0.0:$PORT wsgi:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.6"
+      - key: SECRET_KEY
+        generateValue: true
+
+  - type: web
+    name: curator-campaign
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      # Set this to your curator-tracking service URL after deploy, e.g. https://curator-tracking.onrender.com
+      - key: TRACKING_API_URL
+        sync: false

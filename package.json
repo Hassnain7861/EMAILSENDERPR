@@ -2,6 +2,9 @@
   "name": "curator-campaign-workspace",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.mjs",
     "serve": "node server.mjs"

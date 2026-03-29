@@ -1,0 +1,4 @@
+# Flask tracking service on Render (used by buildCommand in render.yaml)
+-r flask_email_tracking/requirements.txt
+gunicorn>=22.0.0
+psycopg2-binary>=2.9.9

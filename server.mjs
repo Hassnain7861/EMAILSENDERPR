@@ -25,6 +25,17 @@ const app = express();
 
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: '4mb' }));
+
+/** Root URL on Render — static folder has no index.html, so send users to the app */
+app.get('/', (req, res) => {
+  res.redirect(302, '/campaign-workspace.html');
+});
+
+/** Health check for Render / load balancers */
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true, service: 'curator-campaign' });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 /**
@@ -106,8 +117,8 @@ app.post('/api/send-campaign', async (req, res) => {
   res.json(results);
 });
 
-app.listen(PORT, () => {
-  console.log(`Campaign workspace: http://localhost:${PORT}/campaign-workspace.html`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Campaign workspace: http://0.0.0.0:${PORT}/campaign-workspace.html`);
   console.log('Send API: POST /api/send-campaign');
   console.log(`Default tracking API: ${DEFAULT_TRACKING} (Flask). Set TRACKING_API_URL to override.`);
 });
